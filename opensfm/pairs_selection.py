@@ -72,6 +72,19 @@ def get_gps_opk_point(
     return origin[0], z_axis / (sign(z_axis[2]) * z_axis[2]) * DEFAULT_Z
 
 
+def get_gps_opk_ypr_point(
+    exif: Dict[str, Any], reference: geo.TopocentricConverter
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Return GPS-based representative point."""
+    ypr = exif["ypr"]
+    yaw, pitch, roll = ypr["yaw"], ypr["pitch"], ypr["roll"]
+    print('yaw,pitch,roll', yaw, pitch, roll)
+    R_camera = geometry.rotation_from_ypr(yaw=yaw, pitch=pitch, roll=roll)
+    z_axis = R_camera[2]
+    origin = get_gps_point(exif, reference)
+    return origin[0], z_axis / (sign(z_axis[2]) * z_axis[2]) * DEFAULT_Z
+
+
 def find_best_altitude(
     origin: Dict[str, np.ndarray], directions: Dict[str, np.ndarray]
 ) -> float:
@@ -115,6 +128,8 @@ def get_representative_points(
         (True, False, False): get_gps_point,
         (True, True, False): get_gps_opk_point,
         # (True, False, True):  add YPR method here
+        # should be (True, False, True) for ypr.
+        (True, True, True): get_gps_opk_ypr_point,
     }
 
     had_orientation = False
@@ -477,6 +492,8 @@ def construct_pairs(
         else:
             for i in order[:max_neighbors]:
                 pairs[sorted_pair(im, other[i])] = distances[i]
+    import pdb
+    pdb.set_trace()
     return pairs
 
 
@@ -611,6 +628,9 @@ def match_candidates_from_metadata(
         graph_rounds = 0
 
     images_ref.sort()
+
+    import pdb
+    pdb.set_trace()
 
     if (
         max_distance

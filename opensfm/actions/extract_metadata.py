@@ -17,6 +17,8 @@ def run_dataset(data: DataSetBase) -> None:
     exif_overrides = {}
     if data.exif_overrides_exists():
         exif_overrides = data.load_exif_overrides()
+    import pdb
+    pdb.set_trace()
 
     camera_models = {}
     for image in data.images():
@@ -35,7 +37,8 @@ def run_dataset(data: DataSetBase) -> None:
         if d["camera"] not in camera_models:
             camera = exif.camera_from_exif_metadata(d, data)
             camera_models[d["camera"]] = camera
-
+    import pdb
+    pdb.set_trace()
     # Override any camera specified in the camera models overrides file.
     if data.camera_models_overrides_exists():
         overrides = data.load_camera_models_overrides()

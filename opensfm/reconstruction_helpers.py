@@ -75,10 +75,16 @@ def rotation_from_orientation_compass(shot: pymap.Shot) -> Optional[np.ndarray]:
 def rotation_from_angles(shot: pymap.Shot) -> Optional[np.ndarray]:
     if not shot.metadata.opk_angles.has_value:
         return None
-    opk_degrees = shot.metadata.opk_angles.value
-    opk_rad = map(math.radians, opk_degrees)
-    return geometry.rotation_from_opk(*opk_rad)
+    # opk_degrees = shot.metadata.opk_angles.value
+    # opk_rad = map(math.radians, opk_degrees)
+    # return geometry.rotation_from_opk(*opk_rad)
+    ypr_rad = shot.metadata.ypr_angles.value
+    print('yaw,pitch,roll---rad', ypr_rad)
+    import pdb
+    # pdb.set_trace()
+    return geometry.rotation_from_ypr(*ypr_rad)
 
+    
 
 def reconstruction_from_metadata(
     data: DataSetBase, images: Iterable[str]
@@ -86,6 +92,10 @@ def reconstruction_from_metadata(
     """Initialize a reconstruction by using EXIF data for constructing shot poses and cameras."""
     data.init_reference()
     rig_assignments = rig.rig_assignments_per_image(data.load_rig_assignments())
+
+    f = open('/home/zlq/pose.pkl', 'wb+')
+    import pickle
+    dump_data = []
 
     reconstruction = types.Reconstruction()
     reconstruction.reference = data.load_reference()
@@ -120,6 +130,15 @@ def reconstruction_from_metadata(
             shot.pose.set_rotation_matrix(rotation)
         shot.pose.set_origin(gps_pos)
         shot.scale = 1.0
+        
+        dump_data.append({
+            'name': image, 
+            'rotation': rotation,
+            'position': gps_pos
+        })
+
+    pickle.dump(dump_data, f)
+    f.close()
     return reconstruction
 
 
@@ -143,10 +162,17 @@ def exif_to_metadata(
             metadata.gps_accuracy.value = 15.0
 
     opk = exif.get("opk")
-    if opk and "omega" in opk and "phi" in opk and "kappa" in opk:
+    ypr = exif.get("ypr")
+    if opk:
         omega, phi, kappa = opk["omega"], opk["phi"], opk["kappa"]
+        yaw, pitch, roll = ypr["yaw"], ypr["pitch"], ypr["roll"]
+
         metadata.opk_angles.value = np.array([omega, phi, kappa])
+        metadata.ypr_angles.value = np.array([yaw, pitch, roll])
+
+        # TODO:check the accuracy of the angles
         metadata.opk_accuracy.value = opk.get("accuracy", 1.0)
+        metadata.ypr_accuracy.value = opk.get("accuracy", 1.0)
 
     metadata.orientation.value = exif.get("orientation", 1)
 

@@ -502,7 +502,7 @@ class EXIF:
                             float(self.xmp[0]["@drone-dji:GimbalRollDegree"]),
                         ]
                     )
-                    ypr[1] += 90  # DJI's values need to be offset
+                    # ypr[1] += 90  # DJI's values need to be offset
             except ValueError:
                 logger.debug(
                     'Invalid yaw/pitch/roll tag in image file "{0:s}"'.format(
@@ -567,7 +567,7 @@ class EXIF:
 
                 if m == 0:
                     logger.debug("Cannot compute OPK angles, divider = 0")
-                    return opk
+                    return None, None
 
                 # Unit vector pointing north
                 xnp /= m
@@ -585,7 +585,14 @@ class EXIF:
                 opk["phi"] = np.degrees(np.arcsin(ceb[0][2]))
                 opk["kappa"] = np.degrees(np.arctan2(-ceb[0][1], ceb[0][0]))
 
-        return opk
+                ypr_obj = {}
+                ypr_obj["yaw"] = float(ypr[0])
+                ypr_obj["pitch"] = float(ypr[1])
+                ypr_obj["roll"] = float(ypr[2])
+
+                return opk, ypr_obj # radians
+
+        return None, None
 
     def extract_exif(self) -> Dict[str, Any]:
         width, height = self.extract_image_size()
@@ -595,7 +602,7 @@ class EXIF:
         orientation = self.extract_orientation()
         geo = self.extract_geo()
         capture_time = self.extract_capture_time()
-        opk = self.extract_opk(geo)
+        opk, ypr = self.extract_opk(geo)
         d = {
             "make": make,
             "model": model,
@@ -609,6 +616,7 @@ class EXIF:
         }
         if opk:
             d["opk"] = opk
+            d["ypr"] = ypr
 
         d["camera"] = camera_id(d)
         return d
@@ -695,28 +703,52 @@ def default_calibration(data: DataSetBase) -> Dict[str, Any]:
 
 def calibration_from_metadata(metadata, data: DataSetBase) -> Dict[str, Any]:
     """Finds the best calibration in one of the calibration sources."""
-    pt = metadata.get("projection_type", default_projection).lower()
-    if (
-        pt == "brown"
-        or pt == "fisheye_opencv"
-        or pt == "radial"
-        or pt == "simple_radial"
-        or pt == "fisheye62"
-        or pt == "fisheye624"
-    ):
-        calib = (
-            hard_coded_calibration(metadata)
-            or focal_xy_calibration(metadata)
-            or default_calibration(data)
-        )
-    else:
-        calib = (
-            hard_coded_calibration(metadata)
-            or focal_ratio_calibration(metadata)
-            or default_calibration(data)
-        )
-    if "projection_type" not in calib:
-        calib["projection_type"] = pt
+    pt = "brown"
+    calib = {}
+    calib["projection_type"] = pt
+    # F = 3049.29570277823
+    # CX = 2016
+    # CY = 1512
+    # K1 = 0.0926492640503083
+    # K2 = -0.168504153913159
+    # K3 = 0.126455253821778
+    # P1 = -0.000198581882871485
+    # P2 = -0.000211353119079304
+
+    calib["focal_x"] = 3049.29570277823 / 4032
+    calib["focal_y"] = 3049.29570277823 / 4032
+    calib["c_x"] = 0.0
+    calib["c_y"] = 0.0
+    calib["k1"] = 0.0926492640503083
+    calib["k2"] = -0.168504153913159
+    calib["k3"] = 0.126455253821778
+    calib["p1"] = -0.000198581882871485
+    calib["p2"] = -0.000211353119079304
+
+
+    # pt = metadata.get("projection_type", default_projection).lower()
+    # if (
+    #     pt == "brown"
+    #     or pt == "fisheye_opencv"
+    #     or pt == "radial"
+    #     or pt == "simple_radial"
+    #     or pt == "fisheye62"
+    #     or pt == "fisheye624"
+    # ):
+    #     calib = (
+    #         hard_coded_calibration(metadata)
+    #         or focal_xy_calibration(metadata)
+    #         or default_calibration(data)
+    #     )
+    # else:
+    #     calib = (
+    #         hard_coded_calibration(metadata)
+    #         or focal_ratio_calibration(metadata)
+    #         or default_calibration(data)
+    #     )
+    # if "projection_type" not in calib:
+    #     calib["projection_type"] = pt
+    # return calib
     return calib
 
 
@@ -730,6 +762,9 @@ def camera_from_exif_metadata(
 
     calib = calibration_func(metadata, data)
     calib_pt = calib.get("projection_type", default_projection).lower()
+
+    import pdb
+    pdb.set_trace()
 
     camera = None
     if calib_pt == "perspective":

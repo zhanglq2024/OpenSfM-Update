@@ -1531,6 +1531,9 @@ def triangulation_reconstruction(
     rig_camera_priors = data.load_rig_cameras()
     gcp = data.load_ground_control_points()
 
+    import pdb
+    pdb.set_trace()
+
     reconstruction = helpers.reconstruction_from_metadata(data, images)
 
     config = data.config

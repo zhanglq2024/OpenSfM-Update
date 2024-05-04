@@ -8,12 +8,13 @@ def run_dataset(data: DataSetBase, algorithm: reconstruction.ReconstructionAlgor
     """Compute the SfM reconstruction."""
 
     tracks_manager = data.load_tracks_manager()
-
-    if algorithm == reconstruction.ReconstructionAlgorithm.INCREMENTAL:
+    import pdb
+    pdb.set_trace()
+    if False and algorithm == reconstruction.ReconstructionAlgorithm.INCREMENTAL:
         report, reconstructions = reconstruction.incremental_reconstruction(
             data, tracks_manager
         )
-    elif algorithm == reconstruction.ReconstructionAlgorithm.TRIANGULATION:
+    elif True or algorithm == reconstruction.ReconstructionAlgorithm.TRIANGULATION:
         report, reconstructions = reconstruction.triangulation_reconstruction(
             data, tracks_manager
         )

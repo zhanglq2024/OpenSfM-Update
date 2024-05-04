@@ -93,6 +93,18 @@ void ShotMeasurements::Set(const ShotMeasurements& other) {
   } else {
     opk_accuracy_.Reset();
   }
+
+  if (other.ypr_angles_.HasValue()) {
+    ypr_angles_.SetValue(other.ypr_angles_.Value());
+  } else {
+    ypr_angles_.Reset();
+  }
+  if (other.ypr_accuracy_.HasValue()) {
+    ypr_accuracy_.SetValue(other.ypr_accuracy_.Value());
+  } else {
+    ypr_accuracy_.Reset();
+  }
+
   if (other.compass_accuracy_.HasValue()) {
     compass_accuracy_.SetValue(other.compass_accuracy_.Value());
   } else {
