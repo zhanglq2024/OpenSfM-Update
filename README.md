@@ -27,3 +27,8 @@ OpenSfM is BSD-style licensed, as found in the LICENSE file.  See also the Faceb
 
 [Terms of Use]: https://opensource.facebook.com/legal/terms (Facebook Open Source - Terms of Use)
 [Privacy Policy]: https://opensource.facebook.com/legal/privacy (Facebook Open Source - Privacy Policy)
+
+
+## TODO
+
+Modify to adapt M3TD Camera.
