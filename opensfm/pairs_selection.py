@@ -72,6 +72,19 @@ def get_gps_opk_point(
     return origin[0], z_axis / (sign(z_axis[2]) * z_axis[2]) * DEFAULT_Z
 
 
+# double check the result of origin and direction.
+def get_gps_opk_ypr_point(
+    exif: Dict[str, Any], reference: geo.TopocentricConverter
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Return GPS-based representative point."""
+    ypr = exif["ypr"]
+    yaw, pitch, roll = ypr["yaw"], ypr["pitch"], ypr["roll"]
+    R_camera = geometry.rotation_from_ypr(yaw=yaw, pitch=pitch, roll=roll)
+    z_axis = R_camera[2]
+    origin = get_gps_point(exif, reference)
+    return origin[0], z_axis / (sign(z_axis[2]) * z_axis[2]) * DEFAULT_Z
+
+
 def find_best_altitude(
     origin: Dict[str, np.ndarray], directions: Dict[str, np.ndarray]
 ) -> float:
@@ -114,7 +127,7 @@ def get_representative_points(
     map_method = {
         (True, False, False): get_gps_point,
         (True, True, False): get_gps_opk_point,
-        # (True, False, True):  add YPR method here
+        (True, False, True): get_gps_opk_ypr_point
     }
 
     had_orientation = False

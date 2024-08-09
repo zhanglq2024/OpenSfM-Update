@@ -112,6 +112,8 @@ PYBIND11_MODULE(pymap, m) {
                      &map::ShotMeasurements::compass_accuracy_)
       .def_readwrite("opk_angles", &map::ShotMeasurements::opk_angles_)
       .def_readwrite("opk_accuracy", &map::ShotMeasurements::opk_accuracy_)
+      .def_readwrite("ypr_angles", &map::ShotMeasurements::ypr_angles_)
+      .def_readwrite("ypr_accuracy", &map::ShotMeasurements::ypr_accuracy_)
       .def_readwrite("sequence_key", &map::ShotMeasurements::sequence_key_)
       .def_property("attributes", &map::ShotMeasurements::GetAttributes,
                     &map::ShotMeasurements::SetAttributes)
@@ -120,7 +122,7 @@ PYBIND11_MODULE(pymap, m) {
             return py::make_tuple(
                 s.gps_accuracy_, s.gps_position_, s.orientation_,
                 s.capture_time_, s.gravity_down_, s.compass_angle_,
-                s.compass_accuracy_, s.opk_angles_, s.opk_accuracy_,
+                s.compass_accuracy_, s.opk_angles_, s.opk_accuracy_, s.ypr_angles_, s.ypr_accuracy_,
                 s.sequence_key_, s.GetAttributes());
           },
           [](py::tuple s) {
@@ -134,6 +136,9 @@ PYBIND11_MODULE(pymap, m) {
             sm.compass_accuracy_ = s[6].cast<decltype(sm.compass_accuracy_)>();
             sm.opk_angles_ = s[7].cast<decltype(sm.opk_angles_)>();
             sm.opk_accuracy_ = s[8].cast<decltype(sm.opk_accuracy_)>();
+            sm.ypr_angles_ = s[7].cast<decltype(sm.ypr_angles_)>();
+            sm.ypr_accuracy_ = s[8].cast<decltype(sm.ypr_accuracy_)>();
+
             sm.sequence_key_ = s[9].cast<decltype(sm.sequence_key_)>();
             sm.GetMutableAttributes() = s[10].cast<decltype(sm.attributes_)>();
             return sm;

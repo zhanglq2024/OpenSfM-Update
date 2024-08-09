@@ -68,6 +68,64 @@ def ptr_from_rotation_v2(rotation_matrix: np.ndarray) -> Tuple[float, float, flo
     return pan, tilt - np.pi / 2, roll
 
 
+def rotation_matrix(yaw_rad, pitch_rad, roll_rad):
+    """
+    Generate the rotation matrix for the given yaw, pitch, and roll in the NED coordinate system.
+    
+    Parameters:
+    yaw (float): Yaw angle in degrees.
+    pitch (float): Pitch angle in degrees.
+    roll (float): Roll angle in degrees.
+    
+    Returns:
+    numpy.ndarray: The resulting rotation matrix.
+    """
+    
+    # Yaw rotation matrix (around z-axis)
+    Rz = np.array([
+        [np.cos(yaw_rad), -np.sin(yaw_rad), 0],
+        [np.sin(yaw_rad), np.cos(yaw_rad), 0],
+        [0, 0, 1]
+    ])
+    
+    # Pitch rotation matrix (around y-axis)
+    Ry = np.array([
+        [np.cos(pitch_rad), 0, np.sin(pitch_rad)],
+        [0, 1, 0],
+        [-np.sin(pitch_rad), 0, np.cos(pitch_rad)]
+    ])
+    
+    # Roll rotation matrix (around x-axis)
+    Rx = np.array([
+        [1, 0, 0],
+        [0, np.cos(roll_rad), -np.sin(roll_rad)],
+        [0, np.sin(roll_rad), np.cos(roll_rad)]
+    ])
+    
+    # The overall rotation matrix in NED (note the order of multiplication: yaw * pitch * roll)
+    R = Rz @ Ry @ Rx
+    return R
+
+
+def rotation_from_ypr(yaw: float, pitch: float, roll: float) -> np.ndarray:
+    """camera to world rotation matrix from yaw, pitch and roll."""
+    T_cam_to_gimbal = np.array([
+        [0, 0, 1],
+        [1, 0, 0],
+        [0, 1, 0]
+    ])
+    T_enu_ned = np.array([
+        [0, 1, 0],
+        [1, 0, 0],
+        [0, 0, -1]
+    ])
+    T_ned_enu = np.linalg.inv(T_enu_ned)
+    T_gimbal_ned = rotation_matrix(yaw, pitch, roll)
+
+    return T_ned_enu @ T_gimbal_ned @ T_cam_to_gimbal
+
+
+
 def rotation_from_opk(omega: float, phi: float, kappa: float) -> np.ndarray:
     """World-to-camera rotation matrix from pan, tilt and roll."""
 
