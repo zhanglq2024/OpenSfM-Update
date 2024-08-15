@@ -647,17 +647,9 @@ def calibration_from_metadata(metadata, data: DataSetBase) -> Dict[str, Any]:
 
     # if DJI camera is detected, hard coded
     if metadata['model'] == 'M3TD':
+        print('Model:M3TD')
         calib = {}
         calib["projection_type"] = "brown"
-
-        # F = 3049.29570277823
-        # CX = 2016
-        # CY = 1512
-        # K1 = 0.0926492640503083
-        # K2 = -0.168504153913159
-        # K3 = 0.126455253821778
-        # P1 = -0.000198581882871485
-        # P2 = -0.000211353119079304
 
         calib["focal_x"] = 3049.29570277823 / 4032
         calib["focal_y"] = 3049.29570277823 / 4032
@@ -668,6 +660,37 @@ def calibration_from_metadata(metadata, data: DataSetBase) -> Dict[str, Any]:
         calib["k3"] = 0.126455253821778
         calib["p1"] = -0.000198581882871485
         calib["p2"] = -0.000211353119079304
+    elif metadata['model'] == 'M3E':
+        print('Model:M3E')
+        calib = {}
+        calib["projection_type"] = "brown"
+
+        calib["focal_x"] = 3713.29 / 5280
+        calib["focal_y"] = 3713.29 / 3956
+        calib["c_x"] = 2467.02
+        calib["c_y"] = 1969.28
+        calib["k1"] = -0.11257524
+        calib["k2"] = 0.01487443
+        calib["k3"] = -0.02706411
+        calib["p1"] = -0.00008572
+        calib["p2"] = 0.0000001
+        
+    elif metadata['model'] == 'M3T':
+        print('Model:M3T')
+        calib = {}
+        calib["projection_type"] = "brown"
+
+        calib["focal_x"] = 2890 / 4000
+        calib["focal_y"] = 2890 / 3000
+        calib["c_x"] = 2000
+        calib["c_y"] = 1500
+        calib["k1"] = 0.17285197
+        calib["k2"] = -0.42744389
+        calib["k3"] = 0.21868222
+        calib["p1"] = -0.00014433
+        calib["p2"] = -0.0001434
+    else:
+        print('NOT FOUND DJI MODELS')
 
     return calib
 
